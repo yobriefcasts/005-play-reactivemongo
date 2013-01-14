@@ -19,16 +19,40 @@ object StockItems extends Controller {
   }
 
   def create = Action {
-    Ok(views.html.create())
+    Ok(views.html.create(StockItem.form))
   }
 
   def save = Action { implicit request =>
     StockItem.form.bindFromRequest.fold(
-      errors => TODO(request),
+      errors => BadRequest(views.html.create(errors)),
       item => {
         Stocklist.insert(item)
         Redirect(routes.StockItems.index)
       }
     )
+  }
+
+  def edit(id: Int) = Action {
+    Stocklist.getSingle(id).map { item =>
+      val form =StockItem.form.fill(item)
+      Ok(views.html.edit(id, form))
+    } getOrElse {
+      Redirect(routes.StockItems.index)
+    }
+  }
+
+  def update(id: Int) = Action { implicit request =>
+    StockItem.form.bindFromRequest.fold(
+      errors => BadRequest(views.html.edit(id, errors)),
+      item => {
+        Stocklist.update(id, item)
+        Redirect(routes.StockItems.index)
+      }
+    )
+  }
+
+  def delete(id: Int) = Action {
+    Stocklist.delete(id)
+    Redirect(routes.StockItems.index)
   }
 }

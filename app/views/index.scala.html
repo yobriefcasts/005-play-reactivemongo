@@ -12,6 +12,7 @@
             <th>Id</th>
             <th>Name</th>
             <th>Quantity</th>
+            <th></th>
         </tr>
        </thead>
        <tbody>
@@ -22,6 +23,10 @@
                         <a href="@routes.StockItems.view(item.id)">@item.name</a>
                     </td>
                     <td>@item.quantity</td>
+                    <td>
+                        <a href="@routes.StockItems.edit(item.id)">Edit</a>
+                        <a href="@routes.StockItems.delete(item.id)">Delete</a>
+                    </td>
                 </tr>
             }
        </tbody>

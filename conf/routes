@@ -7,6 +7,9 @@ GET     /                           controllers.StockItems.index
 GET     /item/:id                   controllers.StockItems.view(id: Int)
 GET     /item                       controllers.StockItems.create
 POST    /item                       controllers.StockItems.save
+GET     /item/:id/edit              controllers.StockItems.edit(id: Int)
+POST    /item/:id                   controllers.StockItems.update(id: Int)
+GET     /items/:id/delete           controllers.StockItems.delete(id: Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
