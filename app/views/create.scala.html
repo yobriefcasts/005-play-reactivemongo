@@ -1,0 +1,16 @@
+
+@main("New Stock Item"){
+    <form method="POST" action="@routes.StockItems.save">
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" />
+        </div>
+        <div>
+            <label for="quantity">Quantity:</label>
+            <input type="text" name="quantity" id="quantity" />
+        </div>
+        <div>
+            <input type="submit" value="Save" />
+        </div>
+    </form>
+}

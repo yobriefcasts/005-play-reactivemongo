@@ -2,8 +2,22 @@ package models
 
 import collection.mutable.ArrayBuffer
 
+import play.api.data._
+import play.api.data.Forms._
 
 case class StockItem(id: Int, name: String, quantity: Long)
+
+object StockItem {
+
+  val form = Form(
+    mapping(
+      "id" -> ignored(0),
+      "name" -> nonEmptyText,
+      "quantity" -> longNumber
+    )(StockItem.apply)(StockItem.unapply)
+  )
+
+}
 
 object Stocklist {
 

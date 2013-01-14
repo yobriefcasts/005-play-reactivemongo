@@ -1,9 +1,9 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.Stocklist
+import models.{StockItem, Stocklist}
 
-object StockItem extends Controller {
+object StockItems extends Controller {
 
   def index = Action {
     val data = Stocklist.getAll
@@ -14,8 +14,21 @@ object StockItem extends Controller {
     Stocklist.getSingle(id).map { item =>
       Ok(views.html.view(item))
     } getOrElse {
-      Redirect(routes.StockItem.index())
+      Redirect(routes.StockItems.index())
     }
   }
 
+  def create = Action {
+    Ok(views.html.create())
+  }
+
+  def save = Action { implicit request =>
+    StockItem.form.bindFromRequest.fold(
+      errors => TODO(request),
+      item => {
+        Stocklist.insert(item)
+        Redirect(routes.StockItems.index)
+      }
+    )
+  }
 }

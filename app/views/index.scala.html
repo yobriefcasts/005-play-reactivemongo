@@ -4,6 +4,7 @@
 
    <h1>Stock List</h1>
 
+    <a href="@routes.StockItems.create">New Item</a>
    <table>
 
        <thead>
@@ -18,7 +19,7 @@
                 <tr>
                     <td>@item.id</td>
                     <td>
-                        <a href="@routes.StockItem.view(item.id)">@item.name</a>
+                        <a href="@routes.StockItems.view(item.id)">@item.name</a>
                     </td>
                     <td>@item.quantity</td>
                 </tr>
