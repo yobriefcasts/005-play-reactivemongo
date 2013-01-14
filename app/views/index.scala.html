@@ -1,7 +1,29 @@
-@(message: String)
+@(items: List[models.StockItem])
 
-@main("Welcome to Play 2.1") {
-    
-    @play20.welcome(message)
+@main("Stock List") {
+
+   <h1>Stock List</h1>
+
+   <table>
+
+       <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+       </thead>
+       <tbody>
+            @items.map { item =>
+                <tr>
+                    <td>@item.id</td>
+                    <td>
+                        <a href="@routes.StockItem.view(item.id)">@item.name</a>
+                    </td>
+                    <td>@item.quantity</td>
+                </tr>
+            }
+       </tbody>
+   </table>
     
 }
