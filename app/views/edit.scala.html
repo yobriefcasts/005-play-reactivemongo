@@ -1,0 +1,12 @@
+@(id: Int, form: Form[models.StockItem])
+
+@main("New Stock Item"){
+
+    @helper.form(action = routes.StockItems.update(id)){
+        @helper.inputText(form("name"))
+        @helper.inputText(form("quantity"))
+        <div>
+            <input type="submit" value="Update" />
+        </div>
+    }
+}
