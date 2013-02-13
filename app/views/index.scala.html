@@ -18,18 +18,18 @@
        <tbody>
             @items.map { item =>
                 <tr>
-                    <td>@item.id</td>
+                    <td>@item.id.get.stringify</td>
                     <td>
-                        <a href="@routes.StockItems.view(item.id)">@item.name</a>
+                        <a href="@routes.StockItems.view(item.id.get.stringify)">@item.name</a>
                     </td>
                     <td>@item.quantity</td>
                     <td>
-                        <a href="@routes.StockItems.edit(item.id)">Edit</a>
-                        <a href="@routes.StockItems.delete(item.id)">Delete</a>
+                        <a href="@routes.StockItems.edit(item.id.get.stringify)">Edit</a>
+                        <a href="@routes.StockItems.delete(item.id.get.stringify)">Delete</a>
                     </td>
                 </tr>
             }
        </tbody>
    </table>
-    
+
 }
