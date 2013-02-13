@@ -1,4 +1,144 @@
-This is your new Play 2.1 application
-=====================================
+Guide
+=====
 
-This file will be packaged with your application, when using `play dist`.
+- Show play-reactivemongo site (https://github.com/zenexity/Play-ReactiveMongo)
+- Take app from 003 and retrofit it
+	- Build.scala add reference
+      "org.reactivemongo" %% "play2-reactivemongo" % "0.8",
+  - Create conf/play.plugins
+      400:play.modules.reactivemongo.ReactiveMongoPlugin
+  - Configure plugin - application.conf
+      mongodb.servers=["localhost:27017"]
+      mongodb.db="prm-inventory"
+  - Retrofit StockItem class
+      - Make ID 
+          Option[BSONObjectID]
+      - Make ID form field 
+          ignored[Option[BSONObjectID]](None)
+      - Create Reader
+          implicit object StockItemReader extends BSONReader[StockItem]{
+            def fromBSON(doc: BSONDocument): StockItem = {
+              val document = doc.toTraversable
+              StockItem(
+                document.getAs[BSONObjectID]("_id"),
+                document.getAs[BSONString]("name").map(_.value).get,
+                document.getAs[BSONLong]("quantity").map(_.value).get
+              )
+            }
+          }
+      - Create Writer
+          implicit object StockItemWriter extends BSONWriter[StockItem]{
+            def toBSON(document: StockItem): BSONDocument = {
+              BSONDocument(
+                "_id" -> document.id.getOrElse(BSONObjectID.generate),
+                "name" -> BSONString(document.name),
+                "quantity" -> BSONLong(document.quantity)
+              )
+            }
+          }
+      - Kill Stocklist object
+  - Retrofit Controller Class
+      - Extend Controller
+          with MongoController
+      - Import play.current
+          import play.api.Play.current
+      - Import BSON Writer and Handler
+          import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONDocumentWriter
+          import reactivemongo.bson.handlers.DefaultBSONHandlers.DefaultBSONReaderHandler
+      - Add reference to the collection
+          lazy val inventory = ReactiveMongoPlugin.collection("inventory")
+      - Index action
+              def index = Action {
+                import StockItem.StockItemReader
+
+                Async {
+                  inventory.find(BSONDocument()).toList.map { stock =>
+                    Ok(views.html.index(stock))
+                  }
+                }
+              }
+      - View Action
+            def view(id: String) = Action {
+              import StockItem.StockItemReader
+              Async {
+                inventory.find(BSONDocument(
+                  "_id" -> BSONObjectID(id))
+                ).headOption.map { maybeItem =>
+                  maybeItem.map { item =>
+                    Ok(views.html.view(item))
+                  } getOrElse {
+                    Redirect(routes.StockItems.index)
+                  }
+                }
+              }
+            }
+      - Save Action
+            def save = Action { implicit request =>
+              import StockItem.StockItemWriter
+              
+              StockItem.form.bindFromRequest.fold(
+                errors => BadRequest(views.html.create(errors)),
+                item => {
+                  inventory.insert(item)
+                  Redirect(routes.StockItems.index)
+                }
+              )
+            }
+      - Edit Action
+            def edit(id: String) = Action {
+              import StockItem.StockItemReader
+              Async {
+                inventory.find(BSONDocument(
+                  "_id" -> BSONObjectID(id))
+                ).headOption.map { maybeItem =>
+                  maybeItem.map { item =>
+                    val form = StockItem.form.fill(item)
+                    Ok(views.html.edit(id, form))
+                  } getOrElse {
+                    Redirect(routes.StockItems.index)
+                  }
+                }
+              }
+            }
+      - Update Action
+            def update(id: String) = Action { implicit request =>
+              import StockItem.StockItemWriter
+              StockItem.form.bindFromRequest.fold(
+                errors => BadRequest(views.html.edit(id, errors)),
+                item => {
+                  inventory.update(BSONDocument(
+                    "_id" -> BSONObjectID(id)
+                  ), item, upsert = false, multi = false)
+                  Redirect(routes.StockItems.index)
+                }
+              )
+            }
+      - Delete Action
+            def delete(id: String) = Action {
+              inventory.remove(BSONDocument(
+                "_id" -> BSONObjectID(id)
+              ), firstMatchOnly = true)
+              Redirect(routes.StockItems.index)
+            }
+      - Update views
+          - Edit View
+              @(id: String, form: Form[models.StockItem])
+          - Index view
+              <tr>
+                  <td>@item.id.get.stringify</td>
+                  <td>
+                      <a href="@routes.StockItems.view(item.id.get.stringify)">@item.name</a>
+                  </td>
+                  <td>@item.quantity</td>
+                  <td>
+                      <a href="@routes.StockItems.edit(item.id.get.stringify)">Edit</a>
+                      <a href="@routes.StockItems.delete(item.id.get.stringify)">Delete</a>
+                  </td>
+              </tr>
+      - Update Routes file
+              GET     /item/:id                   controllers.StockItems.view(id: String)
+              GET     /item                       controllers.StockItems.create
+              POST    /item                       controllers.StockItems.save
+              GET     /item/:id/edit              controllers.StockItems.edit(id: String)
+              POST    /item/:id                   controllers.StockItems.update(id: String)
+              GET     /items/:id/delete           controllers.StockItems.delete(id: String)
